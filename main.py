@@ -12,7 +12,6 @@ pygame.display.set_caption("Pygame Window")
 
 # Load the background image
 background_image = pygame.image.load("background2.jpg").convert()
-
 # Scale the background image to fit the screen
 background_image = pygame.transform.scale(background_image, (screen_width, screen_height))
 
@@ -35,6 +34,23 @@ press_y = screen_height // 4
 fade_alpha = 255  # Initial alpha value (fully opaque)
 fade_speed = 3    # Speed of fading (lower values mean slower fading)
 fade_direction = 1  # Direction of fading (1 = fade in, -1 = fade out)
+
+# Load the character image
+character_image = pygame.image.load("character.png").convert_alpha()
+
+# Resize the character image
+character_width = 100
+character_height = 100
+character_image = pygame.transform.scale(character_image, (character_width, character_height))
+
+# Position the character at the middle of the left side of the bottom screen
+character_x = 0
+character_y = screen_height - character_height
+
+# Variables for controlling the character movement
+character_speed = 5
+is_jumping = False
+jump_count = 10
 
 # Game loop
 start_game = False
@@ -67,8 +83,54 @@ while not start_game:
     pygame.display.flip()
     clock.tick(60)  # Limit the frame rate to 60 FPS
 
-# Game logic and main game loop go here
-# ...
+# Main game loop
+while True:
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        character_x -= character_speed
+        character_image_flipped = pygame.transform.flip(character_image, True, False)
+        screen.blit(character_image_flipped, (character_x, character_y))
+    elif keys[pygame.K_RIGHT]:
+        character_x += character_speed
+        screen.blit(character_image, (character_x, character_y))
+    else:
+        screen.blit(character_image, (character_x, character_y))
+
+    if not is_jumping:
+        if keys[pygame.K_SPACE] or keys[pygame.K_UP]:
+            is_jumping = True
+
+    if is_jumping:
+        if jump_count >= -10:
+            neg = 1
+            if jump_count < 0:
+                neg = -1
+            character_y -= (jump_count ** 2) * 0.5 * neg
+            jump_count -= 1
+        else:
+            is_jumping = False
+            jump_count = 10
+
+    # Ensure the character stays within the screen boundaries
+    if character_x < 0:
+        character_x = 0
+    elif character_x > screen_width - character_width:
+        character_x = screen_width - character_width
+
+    # Draw on the screen
+    screen.blit(background_image, (0, 0))  # Draw the background image at (0, 0)
+    screen.blit(character_image, (character_x, character_y))  # Draw the character
+
+    # Update the display
+    pygame.display.flip()
+    clock.tick(60)  # Limit the frame rate to 60 FPS
 
 # Quit Pygame
 pygame.quit()
+sys.exit()
