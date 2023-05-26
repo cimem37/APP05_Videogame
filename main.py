@@ -33,6 +33,13 @@ beam_width = 20
 beam_height = 50
 beam_image = pygame.transform.scale(beam_image, (beam_width, beam_height))
 
+# Load the press signal image
+press_signal_image = pygame.image.load("press_signal.png").convert_alpha()
+press_signal_width = press_signal_image.get_width()
+press_signal_height = press_signal_image.get_height()
+press_signal_alpha = 255  # Initial alpha value for flashy/fading effect
+press_signal_image = pygame.transform.scale(press_signal_image, (press_signal_width, press_signal_height))
+
 # Position the character at the middle of the left side of the bottom screen
 character_x = 0
 character_y = screen_height - character_height
@@ -44,6 +51,10 @@ ufo_y = 100
 # Position the beam initially off-screen
 beam_x = -beam_width
 beam_y = -beam_height
+
+# Position the press signal in the center of the screen
+press_signal_x = (screen_width - press_signal_width) // 2
+press_signal_y = (screen_height - press_signal_height) // 2
 
 # Variables for controlling the character movement
 character_speed = 5
@@ -70,6 +81,11 @@ pygame.mixer.music.play(-1)
 start_game = False
 clock = pygame.time.Clock()
 
+show_press_signal = True
+flash_timer = 0
+flash_interval = 500  # Time interval for flashing/fading effect
+is_flashing = True  # Flag for determining whether to show or hide the press signal
+
 while not start_game:
     # Event handling
     for event in pygame.event.get():
@@ -81,6 +97,21 @@ while not start_game:
 
     # Draw on the screen
     screen.blit(background_image, (0, 0))  # Draw the background image
+
+    if show_press_signal:
+        if is_flashing:
+            press_signal_image.set_alpha(press_signal_alpha)  # Set the alpha value for flashing/fading
+            screen.blit(press_signal_image, (press_signal_x, press_signal_y))  # Draw the press signal image
+
+        flash_timer += clock.get_time()
+        if flash_timer >= flash_interval:
+            flash_timer = 0
+            if is_flashing:
+                press_signal_alpha = 0  # Hide the press signal by setting alpha to 0
+                is_flashing = False
+            else:
+                press_signal_alpha = 255  # Show the press signal by setting alpha to 255
+                is_flashing = True
 
     # Update the display
     pygame.display.flip()
@@ -164,9 +195,6 @@ while True:
     text = font.render("Hits: " + str(hits), True, (255, 255, 255))
     screen.blit(text, (10, 10))
 
+    # Update the display
     pygame.display.flip()
-    clock.tick(60)
-
-# Quit Pygame
-pygame.quit()
-sys.exit()
+    clock.tick(60)  # Limit the frame rate to 60 FPS
